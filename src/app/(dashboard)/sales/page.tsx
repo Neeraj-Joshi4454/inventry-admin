@@ -1,12 +1,11 @@
-import { ShoppingCart } from 'lucide-react';
-import { ComingSoon } from '@/components/ComingSoon';
+import { PageHeader } from '@/components/admin/PageHeader';
+import { DocumentList } from '@/components/admin/DocumentList';
 
 export default function SalesPage() {
   return (
-    <ComingSoon
-      title="Sales"
-      icon={ShoppingCart}
-      description="Tenant sales already exist in the backend, but there's no cross-tenant Super Admin view yet. This page is reserved for it."
-    />
+    <div>
+      <PageHeader title="Sales" description="Every sale recorded by every business, newest first." />
+      <DocumentList kind="sale" />
+    </div>
   );
 }

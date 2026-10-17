@@ -11,11 +11,14 @@ import {
 } from 'lucide-react';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RecentBusinesses } from '@/components/dashboard/RecentBusinesses';
-import { ComingSoonPanel } from '@/components/dashboard/ComingSoonPanel';
+import { LowStockSummary, RecentDocuments } from '@/components/dashboard/RecentActivity';
 import { useTenantCountsQuery } from '@/hooks/useTenants';
+import { useAdminOverviewQuery } from '@/hooks/useAdmin';
+import { formatCurrency } from '@/lib/utils/format';
 
 export default function DashboardPage() {
   const { data: counts, isLoading } = useTenantCountsQuery();
+  const { data: overview, isLoading: overviewLoading } = useAdminOverviewQuery();
 
   return (
     <div>
@@ -45,14 +48,35 @@ export default function DashboardPage() {
           isLoading={isLoading}
           tone="slate"
         />
-        {/* Products/Sales/Purchases/Low-stock have no backing API yet — those
-            modules are intentionally out of scope for this phase (see
-            README "Known limitations"). Shown as reserved, honestly
-            unavailable cards rather than fabricated numbers. */}
-        <StatCard label="Total Products" icon={Package} unavailable />
-        <StatCard label="Total Sales" icon={ShoppingCart} unavailable />
-        <StatCard label="Total Purchases" icon={Truck} unavailable />
-        <StatCard label="Low Stock Products" icon={AlertTriangle} unavailable tone="amber" />
+        <StatCard
+          label="Total Products"
+          value={overview?.stock.products}
+          icon={Package}
+          isLoading={overviewLoading}
+        />
+        <StatCard
+          label="Total Sales"
+          value={formatCurrency(overview?.sales.amount)}
+          hint={overview ? `${overview.sales.count} sales` : undefined}
+          icon={ShoppingCart}
+          isLoading={overviewLoading}
+          tone="emerald"
+        />
+        <StatCard
+          label="Total Purchases"
+          value={formatCurrency(overview?.purchases.amount)}
+          hint={overview ? `${overview.purchases.count} purchases` : undefined}
+          icon={Truck}
+          isLoading={overviewLoading}
+        />
+        <StatCard
+          label="Low Stock Products"
+          value={overview ? overview.stock.lowStock + overview.stock.outOfStock : undefined}
+          hint={overview ? `${overview.stock.outOfStock} out of stock` : undefined}
+          icon={AlertTriangle}
+          isLoading={overviewLoading}
+          tone="amber"
+        />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -60,24 +84,44 @@ export default function DashboardPage() {
           <RecentBusinesses />
         </div>
         <div className="space-y-4">
-          <ComingSoonPanel
+          <RecentDocuments
             title="Recent Sales"
+            href="/sales"
             icon={ShoppingCart}
-            note="Cross-tenant sales visibility isn't built yet."
+            emptyTitle="No sales yet"
+            isLoading={overviewLoading}
+            items={overview?.recentSales.map((s) => ({
+              id: s._id,
+              number: s.saleNumber,
+              businessName: s.businessName,
+              date: s.saleDate,
+              amount: s.totalAmount,
+              paymentStatus: s.paymentStatus,
+            }))}
           />
-          <ComingSoonPanel
+          <RecentDocuments
             title="Recent Purchases"
+            href="/purchases"
             icon={Truck}
-            note="Purchases module isn't built yet."
+            emptyTitle="No purchases yet"
+            isLoading={overviewLoading}
+            items={overview?.recentPurchases.map((p) => ({
+              id: p._id,
+              number: p.purchaseNumber,
+              businessName: p.businessName,
+              date: p.purchaseDate,
+              amount: p.totalAmount,
+              paymentStatus: p.paymentStatus,
+            }))}
           />
         </div>
       </div>
 
       <div className="mt-4">
-        <ComingSoonPanel
-          title="Low-Stock Summary"
+        <LowStockSummary
+          items={overview?.lowStock}
+          isLoading={overviewLoading}
           icon={AlertTriangle}
-          note="Inventory module isn't built yet."
         />
       </div>
     </div>

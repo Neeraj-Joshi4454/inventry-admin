@@ -57,19 +57,26 @@ npm start
 ## Pages
 
 - `/login` — mobile number + password
-- `/dashboard` — business counts (real, backend-computed) + reserved cards
-  for metrics that don't have a backing API yet (see below)
+- `/dashboard` — business counts, platform totals (products, sales,
+  purchases, low stock), recent sales/purchases and a low-stock summary
 - `/businesses` — search, status filter, sortable columns, pagination, row
   actions (View / Edit / Activate / Deactivate / Suspend)
 - `/businesses/new` — Create Business form → `POST /api/v1/tenants`
   (`createTenantWithOwner`) — see "Backend contract decisions" below
 - `/businesses/[id]` — business + owner info, edit, status actions, reset
-  owner password, reserved statistics grid
+  owner password, statistics grid (`GET /admin/tenants/:id/stats`)
 - `/audit-logs` — real, paginated, backed by `GET /api/v1/audit-logs`
 - `/settings` — Super Admin's own change-password
-- `/products`, `/inventory`, `/sales`, `/purchases`, `/reports` — present in
-  the sidebar per spec, each a "not built yet" placeholder page (explicitly
-  out of scope for this phase)
+- `/products`, `/inventory`, `/sales`, `/purchases` — read-only,
+  cross-business lists with search, business filter, status filter (and a
+  date range for sales/purchases), paginated
+- `/reports` — sales vs purchases for a period: totals, monthly trend,
+  per-business breakdown
+
+All of the above are backed by the backend's SUPER_ADMIN-only, read-only
+`/api/v1/admin/*` endpoints (`backend/src/modules/admin`) — every number is
+computed server-side; the tenant-scoped `/sales`, `/products`, ... routers
+stay closed to SUPER_ADMIN.
 
 ## Backend contract decisions
 
@@ -96,27 +103,14 @@ fabricating backend behavior or building a broken frontend:
 
 ## Known limitations (honest gaps, not bugs)
 
-Per the prompt, Products/Inventory/Sales/Purchases/Reports management is
-out of scope for this phase — and several dashboard/detail-page elements
-the prompt describes depend on those modules or on cross-tenant aggregate
-endpoints that don't exist yet:
-
-- **Dashboard**: "Total Products", "Total Sales", "Total Purchases", "Low
-  Stock Products" cards, and the "Recent Sales"/"Recent Purchases"/
-  "Low-Stock Summary" panels are rendered as explicit "Coming soon" states,
-  not fabricated numbers. "Total/Active/Inactive Businesses" and "Recent
-  Businesses" **are** real, backed by `GET /tenants`'s server-computed
-  pagination totals — never summed or calculated in the frontend.
-- **Business Details statistics** (Products, Current Inventory, Sales,
-  Purchases, Customers, Suppliers counts) are shown as a reserved,
-  explicitly-unavailable grid for the same reason — even for Sales, which
-  partially exists, there's no cross-tenant Super Admin aggregate endpoint
-  yet (the existing `GET /sales` is tenant-scoped and blocks SUPER_ADMIN by
-  design, since SUPER_ADMIN has no "own tenant").
+- The cross-business views are **read-only** — the Super Admin can see every
+  business's products, stock, sales and purchases but can't edit them; that
+  stays with each business's own users.
 - **No `GET /tenants/:id` endpoint exists yet** — a single business is
   fetched by paging through the list and matching the id client-side
   (`lib/api/tenants.ts::getTenantById`). Fine at this scale; revisit if a
-  dedicated endpoint is added.
+  dedicated endpoint is added. The business filter on the list pages has the
+  same 100-business ceiling.
 
 ## UI primitives
 

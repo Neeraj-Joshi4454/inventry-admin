@@ -166,7 +166,7 @@ export function BusinessDetailClient({ id }: { id: string }) {
       </div>
 
       <div className="mt-4">
-        <BusinessStatsGrid />
+        <BusinessStatsGrid tenantId={tenant._id} />
       </div>
 
       <EditBusinessDialog open={editOpen} onClose={() => setEditOpen(false)} tenant={tenant} />
