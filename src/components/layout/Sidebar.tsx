@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Warehouse } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { usePendingRegistrationCountQuery } from '@/hooks/useRegistrations';
 import { navItems } from './navItems';
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { data: pendingRegistrations } = usePendingRegistrationCountQuery();
 
   return (
     <div className="flex h-full flex-col bg-slate-900 text-slate-300">
@@ -35,7 +37,15 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               )}
             >
               <Icon className="h-5 w-5" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.href === '/registrations' && !!pendingRegistrations && (
+                <span
+                  className="rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-slate-900"
+                  aria-label={`${pendingRegistrations} pending`}
+                >
+                  {pendingRegistrations}
+                </span>
+              )}
             </Link>
           );
         })}

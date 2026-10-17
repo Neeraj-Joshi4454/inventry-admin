@@ -8,6 +8,7 @@ import {
   BarChart3,
   ScrollText,
   Settings,
+  UserPlus,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -20,6 +21,7 @@ export interface NavItem {
 export const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Businesses', href: '/businesses', icon: Building2 },
+  { label: 'Registrations', href: '/registrations', icon: UserPlus },
   { label: 'Products', href: '/products', icon: Package },
   { label: 'Inventory', href: '/inventory', icon: Boxes },
   { label: 'Sales', href: '/sales', icon: ShoppingCart },

@@ -8,17 +8,21 @@ import {
   ShoppingCart,
   Truck,
   AlertTriangle,
+  UserPlus,
 } from 'lucide-react';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RecentBusinesses } from '@/components/dashboard/RecentBusinesses';
 import { LowStockSummary, RecentDocuments } from '@/components/dashboard/RecentActivity';
 import { useTenantCountsQuery } from '@/hooks/useTenants';
 import { useAdminOverviewQuery } from '@/hooks/useAdmin';
+import { usePendingRegistrationCountQuery } from '@/hooks/useRegistrations';
+import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils/format';
 
 export default function DashboardPage() {
   const { data: counts, isLoading } = useTenantCountsQuery();
   const { data: overview, isLoading: overviewLoading } = useAdminOverviewQuery();
+  const { data: pendingRegistrations } = usePendingRegistrationCountQuery();
 
   return (
     <div>
@@ -26,6 +30,22 @@ export default function DashboardPage() {
       <p className="mt-1 text-sm text-slate-500">
         Platform-wide overview across all businesses.
       </p>
+
+      {!!pendingRegistrations && (
+        <Link
+          href="/registrations"
+          className="mt-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 hover:bg-amber-100"
+        >
+          <UserPlus className="h-5 w-5 shrink-0" />
+          <span className="flex-1">
+            <span className="font-semibold">
+              {pendingRegistrations} registration request{pendingRegistrations === 1 ? '' : 's'}
+            </span>{' '}
+            waiting for your review
+          </span>
+          <span className="font-medium">Review →</span>
+        </Link>
+      )}
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         <StatCard
